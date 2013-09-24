@@ -1,2 +1,0 @@
-this si sa text
-
