@@ -1,0 +1,12 @@
+Notes on using the THOT system
+
+There exists two remotes -- github and thot
+
+macbuck can push and pull to github
+bcy3 can not push to, only pull from, github
+
+SO
+
+push and pull to the thot remote for both macbuck and bcy3
+
+also store changes on github from macbuck
