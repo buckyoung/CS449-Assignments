@@ -14,7 +14,7 @@ int results(int);
 void playAgain(void);
 
 //Declarations:
-char userInput[MAX], compChoice[MAX];
+char compChoice[MAX];
 int userScore, compScore, roundScore;
 
 
@@ -22,27 +22,30 @@ int userScore, compScore, roundScore;
 //START of program
 int main(void)
 {
+	char input[3];
 	//Seed the rando num
 	srand((unsigned int)time(NULL));
 
 	//Welcome the user and ask if they would like to play
 	printf("Welcome to Rock, Paper, Scissors \n");
-	while ( strcmp(userInput, "yes") != 0 && strcmp(userInput, "no") != 0 )
+	while ( strcmp(input, "yes") != 0 && strcmp(input, "no") != 0 )
 	{
 		printf("Would you like to play? yes or no: ");
+		scanf("%s", input);
 		//Get yes or no
-		fgets(userInput, MAX, stdin);
+		//fgets(userInput, MAX, stdin);
 		//get rid of newline on user input
-		userInput[strlen(userInput) - 1] = '\0';
+		//userInput[strlen(userInput) - 1] = '\0';
 	}
 	//If the user wants to not play
-	if (strcmp(userInput, "no") == 0)
+	if (strcmp(input, "no") == 0)
 	{
 		printf("\nToo bad...\n");
 		
 	}
 	else //else play the game
 	{
+		printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"); //"clears" 
  		play();
 	}
 
@@ -56,9 +59,9 @@ void play(void){
 
 		while(result == 0){
 			roundScore = playRound();
-			printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nYou chose %s and I chose %s.", userInput, compChoice);
+			printf("\nThe computer chose %s.", compChoice);
 			result = results(roundScore);
-			strcpy(userInput, "null"); //reset user input
+			
 		}
 
 
@@ -71,14 +74,17 @@ void play(void){
 int playRound(void)
 {
 	int value;
+	char input[8];
+
 
 	//Get user choice
-	while ( (strcmp(userInput, "rock")!=0) && (strcmp(userInput, "paper")!=0) && (strcmp(userInput, "scissors")!=0) )
+	while ( (strcmp(input, "rock")!=0) && (strcmp(input, "paper")!=0) && (strcmp(input, "scissors")!=0) )
 	{
 		printf("\n\nWhat is your choice? rock paper or scissors: ");
-		fgets(userInput, MAX, stdin);
+		//fgets(userInput, MAX, stdin);
 		//get rid of newline on user input
-		userInput[strlen(userInput) - 1] = '\0';
+		//userInput[strlen(userInput) - 1] = '\0';
+		scanf("%s", input);
 
 	}
 
@@ -99,7 +105,7 @@ int playRound(void)
 			break;
 	}
 
-	return winner(userInput[0], compChoice[0]);
+	return winner(input[0], compChoice[0]);
 
 }
 
@@ -193,22 +199,26 @@ int results(int num)
 
 
 void playAgain(void){
-	while ( strcmp(userInput, "yes") != 0 && strcmp(userInput, "no") != 0 )
+
+	char input[3];
+
+	while ( strcmp(input, "yes") != 0 && strcmp(input, "no") != 0 )
 	{
 		printf("\n\nWould you like to play again? yes or no: ");
 		//Get yes or no
-		fgets(userInput, MAX, stdin);
+		//fgets(userInput, MAX, stdin);
 		//get rid of newline on user input
-		userInput[strlen(userInput) - 1] = '\0';
+		//userInput[strlen(userInput) - 1] = '\0';
+		scanf("%s", input);
 	}
 
-	if (strcmp(userInput, "no") == 0)
+	if (strcmp(input, "no") == 0)
 	{
 		printf("\nToo bad...\n");
 	}
 	else //else play the game
 	{
-		printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+		printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"); //"clears" for a new game
 		play();
 	}
 
