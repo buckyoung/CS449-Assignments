@@ -4,7 +4,7 @@
 #include <string.h>
 
 //Constants:
-#define MAX 10 //including \0
+#define MAX 10 //scissors = 8,   \n = 9,    \0 = 10
 
 //Prototypes:
 void play(void);
