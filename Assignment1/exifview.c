@@ -6,14 +6,14 @@
 
 //Structs
 struct header {
-	char jpg_start_of_file[2];
-	char jpg_app1_marker[2];
-	char app1_block_length[2];
-	char exif_string[4];
-	char null_zero[2];
-	char endianess[2];
-	char version_42[2];
-	char exif_block_offset[4];
+	unsigned char jpg_start_of_file[2];
+	unsigned char jpg_app1_marker[2];
+	unsigned char app1_block_length[2];
+	unsigned char exif_string[4];
+	unsigned char null_zero[2];
+	unsigned char endianess[2];
+	unsigned char version_42[2];
+	unsigned char exif_block_offset[4];
 };
 
 struct tiff_tag {
@@ -25,21 +25,32 @@ struct tiff_tag {
 
 int main(int argc, char argv[]){
 
+	//Declarations
+	FILE* f;
+	struct header exif_head;
+
 	//Check for a single command-line argument
 	if (argc != 2){
 		printf("Usage: ./exifview filename.jpg\n");
 		return -1;
 	}
 
-	//Declarations
-	FILE* f;
-	struct header exif_head;
-
 	//Usage
-	f = fopen(argv[1], "rb"); //open file to read binary
+	
+	f = fopen("img1.jpg", "rb"); //open file to read binary
+
 
 	if (fread(&exif_head, sizeof(struct header), 1, f) == 1){ //Successfully read in exif/tiff header struct
-		printf("\nDebug| FF: %X | D8: %X | FF: %X | E1: %X \n", exif_head.jpg_start_of_file[0], exif_head.jpg_start_of_file[1], exif_head.jpg_app1_marker[0], exif_head.jpg_app1_marker[1]); //DEBUG
+
+		//Verify JPG and APP1
+		if ( !(exif_head.jpg_start_of_file[0] == 0xFF && exif_head.jpg_start_of_file[1] == 0xD8) ){ //Verify this is a jpg
+			printf("Error: Cannot verify file as JPG");
+			return -3;
+		}
+		if ( !(exif_head.jpg_app1_marker[0] == 0xFF && exif_head.jpg_app1_marker[1] == 0xE1) ){ //Verify this is a APP1
+			printf("Error: Cannot verify file as APP1");
+			return -4;
+		}
 
 
 	} else { //FAILED to read in a header struct
