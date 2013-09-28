@@ -1,16 +1,17 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 //Structs
 struct header {
-	unsigned char jpg_start_of_file[2];
-	unsigned char jpg_app1_marker[2];
-	unsigned char app1_block_length[2];
+	unsigned short jpg_start_of_file;
+	unsigned short jpg_app1_marker;
+	unsigned short app1_block_length;
 	unsigned char exif_string[4];
-	unsigned char null_zero[2];
+	unsigned short null_zero;
 	unsigned char endianness[2];
-	unsigned char version_42[2];
-	unsigned char exif_block_offset[4];
+	unsigned short version_42;
+	unsigned int exif_block_offset;
 };
 
 struct tiff_tag {
@@ -104,13 +105,13 @@ int verify(struct header* s){
 		char a[5];
 
 		//Verify this is a jpg
-		if ( !(s->jpg_start_of_file[0] == 0xFF && s->jpg_start_of_file[1] == 0xD8) ){
+		if ( !((*s).jpg_start_of_file == 0xD8FF) ){
 			printf("Error: Cannot verify file as JPG\n");
 			return 0;
 		}
 
 		//Verify this is a APP1
-		if ( !(s->jpg_app1_marker[0] == 0xFF && s->jpg_app1_marker[1] == 0xE1) ){ 
+		if ( !(s->jpg_app1_marker == 0xE1FF) ){ 
 			printf("Error: Cannot verify file as APP1\n");
 			return 0;
 		}
