@@ -47,6 +47,11 @@ int main(int argc, char* argv[]){
 	//Usage
 	f = fopen(argv[1], "rb"); //open file to read binary 
 
+	if (f == NULL){
+		printf("Error: File does not exist\nExiting...\n");
+		return -5;
+	}
+
 
 	if (fread(&exif_head, sizeof(struct header), 1, f) == 1){ //Successfully read in exif/tiff header struct
 
@@ -102,7 +107,7 @@ int verify(struct header* s){
 
 		//Verify Endianness
 		if ( !(s->endianness[0] == 'I' && s->endianness[1] == 'I')){
-			printf("Error: Endianness not supported");
+			printf("Error: Endianness not supported\n");
 			return 0;
 		}
 
