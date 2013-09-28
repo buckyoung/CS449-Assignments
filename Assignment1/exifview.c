@@ -29,7 +29,7 @@ void parse_tiffs_sub(FILE*);
 void get_type_five(int*, int*, int, FILE*);
 
 //Declarations
-int main(int argc, char argv[]){
+int main(int argc, char* argv[]){
 
 	//Check for a single command-line argument
 	if (argc != 2){
@@ -38,12 +38,14 @@ int main(int argc, char argv[]){
 	}
 
 
+
 	//Declarations
 	FILE* f;
 	struct header exif_head;
 
+
 	//Usage
-	f = fopen("img1.jpg", "rb"); //open file to read binary //TODO (SegFault on argv[1]?!)
+	f = fopen(argv[1], "rb"); //open file to read binary 
 
 
 	if (fread(&exif_head, sizeof(struct header), 1, f) == 1){ //Successfully read in exif/tiff header struct
