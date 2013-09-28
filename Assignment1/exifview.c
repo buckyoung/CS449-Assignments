@@ -14,14 +14,15 @@ struct header {
 };
 
 struct tiff_tag {
-	char tag_id[2];
-	char data_type[2];
-	char num_of_data[4];
-	char value_or_offset[4];
+	unsigned short tag_id;
+	unsigned short data_type;
+	unsigned int num;
+	unsigned int offset;
 };
 
 //Prototypes
 int verify(struct header*);
+void print_m_m(int, int, FILE*);
 
 //Declarations
 
@@ -33,9 +34,14 @@ int main(int argc, char argv[]){
 		return -1;
 	}
 
+
 	//Declarations
 	FILE* f;
 	struct header exif_head;
+	unsigned short count;
+	int i;
+	struct tiff_tag tiff;
+
 
 	//Usage
 	f = fopen("img1.jpg", "rb"); //open file to read binary //TODO (SegFault on argv[1]?!)
@@ -47,16 +53,45 @@ int main(int argc, char argv[]){
 		if (!verify(&exif_head)){ //returns 0 if failed
 			printf("Exiting...\n");
 			return -3;
-		} 
+		}
 
-		//Verified file, now lets start reading the TIFFs
+		//Verified file, now get count:
+		fread(&count, sizeof(short), 1, f); //at byte 20-21
 
+		//for each count, read in tiff tag
+		for (i = 0; i < count; i++){
+			//Where are the tags? starting at byte 22. Note: tags are 12 bytes long
+			//OFFSET => 22+(12*i)
+
+			fread(&tiff, sizeof(struct tiff_tag), 1, f);
+
+			if (tiff.tag_id == 0x010F){
+				//Manufacturer 
+				printf("%-16s", "Manufacturer: ");
+				print_m_m(tiff.num, tiff.offset, f); //Print the manufacturer string
+				printf("\n");
+
+			} else if (tiff.tag_id == 0x0110){
+				//Camera Model
+				printf("%-16s", "Model: ");
+				print_m_m(tiff.num, tiff.offset, f); //Print the camera model string
+				printf("\n");
+
+			} else if (tiff.tag_id == 0x8769){
+				//Exif sub-block address
+
+			}
+
+		}
 
 	} else { //FAILED to read in a header struct
 		printf("Failed to read a single header struct from file");
 		return -2;
 	}
 
+	//CleanUp
+	fclose(f);
+	return 0;
 
 }
 
@@ -97,4 +132,29 @@ int verify(struct header* s){
 		//else, everything is good!
 		return 1;
 
+}
+
+/*
+	print_m_m() prints n characters from offset (o+12) in file f
+	it responsibly and intelligently controls the file-pointer (that is, it retains position across a call to print_m_m)
+*/
+void print_m_m(int n, int o, FILE* f){
+
+	long long int fpointer = ftell(f); //Saves file-pointer
+	char* a = malloc(n * sizeof(char));//create space for n characters of size 1byte (yes, redundant)
+
+	if (a == NULL){
+		printf("\nERROR ALLOCATING MEMORY IN print_m_m()\n");
+	}
+
+	o = o+12; //create actual address
+
+	fseek(f, o, SEEK_SET); //go to location in file
+
+	fread(a, sizeof(char), n, f); //read in n chars from file f: place into a (note: n includes a string-sentinel value)
+	printf("%s", a);
+
+
+	fseek(f, fpointer, SEEK_SET); //Returns file-pointer
+	free(a); //Frees memory
 }
