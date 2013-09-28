@@ -166,23 +166,8 @@ void parse_tiffs_sub(FILE* f){
 		//OFFSET => 22+(12*i)
 		fread(&tiff, sizeof(struct tiff_tag), 1, f);
 
-		if (tiff.tag_id == 0x010F){
-			//Manufacturer 
-			printf("%-16s", "Manufacturer: ");
-				print_data(tiff.num, tiff.offset, f); //Print the manufacturer string
-			printf("\n");
-
-		} else if (tiff.tag_id == 0x0110){
-			//Camera Model
-			printf("%-16s", "Model: ");
-			print_data(tiff.num, tiff.offset, f); //Print the camera model string
-			printf("\n");
-
-		} else if (tiff.tag_id == 0x8769){
-			//Exif sub-block address
-			parse_tiffs_sub(f);
-	
-		}
+		//IF TAG BLOCK
+		
 	}
 }
 
