@@ -26,6 +26,7 @@ int verify(struct header*);
 void print_data(int, int, FILE*);
 void parse_tiffs(FILE*);
 void parse_tiffs_sub(FILE*);
+void get_type_five(int*, int*, int, FILE*);
 
 //Declarations
 int main(int argc, char argv[]){
@@ -153,7 +154,7 @@ void parse_tiffs(FILE* f){
 void parse_tiffs_sub(FILE* f){
 	//declarations:
 	unsigned short count;
-	int i;
+	unsigned int i, a, b;
 	struct tiff_tag tiff;
 	
 	//Usage:
@@ -181,16 +182,16 @@ void parse_tiffs_sub(FILE* f){
 			printf("\n");
 		} else if (tiff.tag_id == 0x829a){
 			printf("%-16s", "Exposure Time: ");
-
-			printf("\n");
+			get_type_five(&a, &b, tiff.offset, f); //give values to a and b for data type five
+			printf("%d/%d second\n", a, b);
 		} else if (tiff.tag_id == 0x829d){
 			printf("%-16s", "F-stop: ");
-
-			printf("\n");
+			get_type_five(&a, &b, tiff.offset, f); //give values to a and b for data type five
+			printf("f/%1.1f\n", (double)a/b);
 		} else if (tiff.tag_id == 0x920A){
 			printf("%-16s", "Focal Length: ");
-
-			printf(" mm\n");
+			get_type_five(&a, &b, tiff.offset, f); //give values to a and b for data type five
+			printf("%2.0f mm\n", (double)a/b);
 		} else if (tiff.tag_id == 0x9003){
 			printf("%-16s", "Date Taken: ");
 			print_data(tiff.num, tiff.offset, f); //Print the date taken
@@ -223,4 +224,22 @@ void print_data(int n, int o, FILE* f){
 
 	fseek(f, fpointer, SEEK_SET); //Returns file-pointer
 	free(a); //Frees memory
+}
+
+/*
+	assigns values to a and b for data type 5
+	(very similar to print data function)
+*/
+void get_type_five(int* a, int* b, int o, FILE* f){
+	long long int fpointer = ftell(f); //Saves file-pointer
+	
+	o = o+12; //create actual address
+
+	fseek(f, o, SEEK_SET); //go to location in file
+
+	fread(a, sizeof(int), 1, f); //read in 1 integer and assign a
+
+	fread(b, sizeof(int), 1, f); //read in 1 integer and assign b
+
+	fseek(f, fpointer, SEEK_SET); //Returns file-pointer
 }
