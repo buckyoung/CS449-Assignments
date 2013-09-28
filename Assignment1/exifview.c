@@ -169,15 +169,15 @@ void parse_tiffs_sub(FILE* f){
 		//IF TAG BLOCK
 		if (tiff.tag_id == 0xA002){
 			printf("%-16s", "Width: ");
-
-			printf("\n");
+			printf("%d", tiff.offset); //offset, in this case, is the actual data value!
+			printf(" pixels\n");
 		} else if (tiff.tag_id == 0xA003){
 			printf("%-16s", "Height: ");
-
-			printf("\n");
+			printf("%d", tiff.offset); //offset, in this case, is the actual data value!
+			printf(" pixels\n");
 		} else if (tiff.tag_id == 0x8827){
 			printf("%-16s", "ISO: ");
-
+			printf("ISO %d", tiff.offset); //offset, in this case, is the actual data value!
 			printf("\n");
 		} else if (tiff.tag_id == 0x829a){
 			printf("%-16s", "Exposure Time: ");
@@ -190,10 +190,10 @@ void parse_tiffs_sub(FILE* f){
 		} else if (tiff.tag_id == 0x920A){
 			printf("%-16s", "Focal Length: ");
 
-			printf("\n");
+			printf(" mm\n");
 		} else if (tiff.tag_id == 0x9003){
 			printf("%-16s", "Date Taken: ");
-
+			print_data(tiff.num, tiff.offset, f); //Print the date taken
 			printf("\n");
 		}
 
