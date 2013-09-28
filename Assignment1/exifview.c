@@ -167,7 +167,36 @@ void parse_tiffs_sub(FILE* f){
 		fread(&tiff, sizeof(struct tiff_tag), 1, f);
 
 		//IF TAG BLOCK
-		
+		if (tiff.tag_id == 0xA002){
+			printf("%-16s", "Width: ");
+
+			printf("\n");
+		} else if (tiff.tag_id == 0xA003){
+			printf("%-16s", "Height: ");
+
+			printf("\n");
+		} else if (tiff.tag_id == 0x8827){
+			printf("%-16s", "ISO: ");
+
+			printf("\n");
+		} else if (tiff.tag_id == 0x829a){
+			printf("%-16s", "Exposure Time: ");
+
+			printf("\n");
+		} else if (tiff.tag_id == 0x829d){
+			printf("%-16s", "F-stop: ");
+
+			printf("\n");
+		} else if (tiff.tag_id == 0x920A){
+			printf("%-16s", "Focal Length: ");
+
+			printf("\n");
+		} else if (tiff.tag_id == 0x9003){
+			printf("%-16s", "Date Taken: ");
+
+			printf("\n");
+		}
+
 	}
 }
 
