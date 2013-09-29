@@ -27,7 +27,7 @@ int main(void)
 	srand((unsigned int)time(NULL));
 
 	//Welcome the user and ask if they would like to play
-	printf("Welcome to Rock, Paper, Scissors \n");
+	printf("Welcome to Rock, Paper, Scissors \nYou will be playing a best-of-5 (first to three wins) against the computer\n");
 	while ( strcmp(input, "yes") != 0 && strcmp(input, "no") != 0 )
 	{
 		printf("Would you like to play? yes or no: ");
