@@ -23,3 +23,11 @@ Our exifview program accepts a filename (jpg) as a command-line argument. It the
 - Focal Length:   60 mm
 - Width:          360 pixels
 - Height:         240 pixels
+
+###Assignment 2
+#####MyStrings and PasswordCracking
+The first half of Assignment 2 required us to write a program similiar to the "strings" process in unix. Namely, our program would accept a filename and open it in binary mode then search for any series of 4 or more printable characters. It will then print each string to the screen, one per line. This was created to, perhaps, help us with the next half of the assignment. 
+The second half of the assignment was to crack 3 programs that were provided to us -- each required a password to unlock. We used gdb to disassemble the code, backtrace, and examine register values. We also utilized the mystrings program to parse the binary and objdump to view shared object files. 
+Program 1: easy to unlock, the required password was moved to a register for a string comparison and was easily found.
+Program 2: this program got the local date and required the first letter of the current day and month to unlock. Example, "MO" during a Monday in October.
+Program 3: this program was orders of magnitude more difficult. The program was dynamically loaded and couldn't be disassembled nor were there any string compares. It boiled down to this: each character was treated as an integer and sent through a mathematical function. Certain characters, thusly, were deemed special and the 10-character-long password required exactly four special characters. Special characters are: b, c, m, n, v, x, z
