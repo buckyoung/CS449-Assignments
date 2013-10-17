@@ -1,0 +1,137 @@
+bcy3_1
+Unlocked with passphrase fNFCklDRjBGBwKSuWiOPiq
+
+This program was similar to the recitation example. The program accepted a sting, sent it through CHOMP and compared the string with a set value. I first explored chomp without finding anything of interest. Then I noticed the initial letter of my string disappear after "repz cmpsb" was called. From here, I made the incorrect assumption that my password would need a leading space or garbage-character for the program to "consume" before comparing the actual password. After some research on REPZ CMPSB and after exporing the value of $esi, I found my solution.
+
+
+bcy3_2
+Unlocked with passphrase FO
+
+After aquiring, perhaps, an inuitive understanding of the programs structure, I was able to hone in on the interesting part fairly quickly. Namely, the call to TEST in main seemed like a great place for a breakpoint. From here, I examined $eax, $ebx (my string!), and $edi ("FO"). Bingo! This program was cracked in less than a minute!
+
+
+bcy3_3
+Unlocked with passphrase "buck\nbuck" or "no\nno\nno\nn" or "lizz\nlizz" or "libc\nlibc"
+
+This one was interesting because gdb couldn't find a main function as a breakpoint -- so I tried to add a breakpoint to the classic "chomp" function to no avail. Finally, I utilized "objdump -S" to view the disas/source which at lease gave me a memory address; however I could not use these as breakpoints successfully. After being a bit stumped, I found that entering my name twice "buck buck" was successful! But this didn't make much sense. So I tried -- and found -- other combinations of phrases which allowed me to unlock the program, like "no no no n" and "lizz lizz". What's going on here?
+Well I spent several days trying to attack the program from various points. The program is dynamically loading a lot of interesting things out of libc.so.6 and other libraries: bsearch, mmap, brk, sbrk, handle_intel, intel_check_word, init_cacheinfo, dl_name_match_p. The user input comes in by way of get_char and it is set to lowercase by tolower. But it appears that the program loads a few different acceptable passwords into memory and then checks against those. It is strange though because all of the strcmp() calls happen BEFORE reading in a user input! So my next task was to find which functions were called AFTER the user input. Interestingly enough, mmap was called before and after. It is called 6 times before from ld-linux.so.2 and once before from libc.so.6, and once after the user input from libc.so.6. 
+
+So it needs to be 10 characters long (including return)
+
+rep stos in memset *0x00610147 : $edi
+memset 3 times then enter input...
+
+call 0x5f8840
+call _dl_start_user
+brk()
+sbrk()
+strrchr
+init_cacheinfo
+handle_intel
+intel_check_word
+bsearch
+mmap
+
+__kernel_vsyscall :: gets char
+get_char()
+
+tolower@plt
+
+do_lookup_x
+_dl_name_match_p
+strcmp()
+
+==  /lib/libc.so.6  ==
+
+_dl_init_internal -- getting close to read in
+
+b
+u
+c
+k
+B
+\n
+B
+u
+c
+k
+
+"unction is dangerous.  `sigaltstack' should be used instead."
+"ion is dangerous.  `sigaltstack' should be used instead."
+
+
+MANPATH
+load auxilary ... %s requested by file %s  : _dl_map_objext_deps
+srtchr
+_dl_sysdep_start
+_dl_runtime_resolve
+
+
+"FCEDIT=emacs"
+"LOGNAME=bcy3"
+Unlocked with passphrase main
+main
+Unlocked with passphrase bc_s
+bc_s
+
+
+Ok, so we've gathered user input and we are in function '??'... I believe it needs at least 9 characters:
+0x804847b:	cmpl   $0x9,-0xc(%ebp)
+[...]
+0x804846e:	call   0x8048338 <getchar@plt>
+
+Then we get another set of chars and a bit later
+.....
+0x80484bd:	and    $0x1501803,%eax  //whut?
+0x80484c2:	test   %eax,%eax
+0x80484c4:	je     0x80484cb
+[TAKES US TOLOWER for a few loops then]
+
+...
+x/20i $pc
+=> 0x80484a8:	sub    $0x62,%eax
+   0x80484ab:	cmp    $0x18,%eax
+   0x80484ae:	ja     0x80484cb
+   	=> 0x80484cb:	addl   $0x1,-0xc(%ebp)
+	   0x80484cf:	cmpl   $0xa,-0xc(%ebp)
+	   0x80484d3:	jle    0x8048492
+	   0x80484d5:	cmpl   $0x4,-0x10(%ebp)
+	   0x80484d9:	jne    0x80484f1
+	   0x80484db:	mov    $0x8048604,%eax
+	   0x80484e0:	lea    -0x1b(%ebp),%edx
+	   0x80484e3:	mov    %edx,0x4(%esp)
+	   0x80484e7:	mov    %eax,(%esp)
+	   0x80484ea:	call   0x8048368 <printf@plt>
+	   		Congratulations!
+			Unlocked with passphrase buck
+			buck
+			
+	   0x80484ef:	jmp    0x80484fd
+	   0x80484f1:	movl   $0x8048632,(%esp)
+	   0x80484f8:	call   0x8048378 <puts@plt>
+	   0x80484fd:	add    $0x34,%esp
+	   0x8048500:	pop    %ebx
+	   0x8048501:	pop    %ebp
+	   0x8048502:	ret    
+	   0x8048503:	push   %ebp
+	   0x8048504:	mov    %esp,%ebp
+	   0x8048506:	sub    $0x8,%esp
+
+   0x80484b0:	mov    $0x1,%edx
+   0x80484b5:	mov    %edx,%ebx
+   0x80484b7:	mov    %eax,%ecx
+   0x80484b9:	shl    %cl,%ebx
+   0x80484bb:	mov    %ebx,%eax
+   0x80484bd:	and    $0x1501803,%eax
+   0x80484c2:	test   %eax,%eax
+   0x80484c4:	je     0x80484cb
+   0x80484c6:	addl   $0x1,-0x10(%ebp)
+   0x80484ca:	nop
+   0x80484cb:	addl   $0x1,-0xc(%ebp)
+   0x80484cf:	cmpl   $0xa,-0xc(%ebp)
+   0x80484d3:	jle    0x8048492
+   0x80484d5:	cmpl   $0x4,-0x10(%ebp)
+   0x80484d9:	jne    0x80484f1
+   0x80484db:	mov    $0x8048604,%eax
+   0x80484e0:	lea    -0x1b(%ebp),%edx
+

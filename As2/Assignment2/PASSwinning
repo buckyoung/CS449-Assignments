@@ -1,0 +1,60 @@
+
+
+[USER INPUT buckyoung\n: 10 chars]
+
+1> 0x8048473:	mov    %al,-0x1b(%ebp,%ebx,1)
+   0x8048477:	addl   $0x1,-0xc(%ebp)
+   0x804847b:	cmpl   $0x9,-0xc(%ebp)
+   0x804847f:	jle    0x804846b
+	=> 0x804846b:	mov    -0xc(%ebp),%ebx
+	   0x804846e:	call   0x8048338 <getchar@plt>
+	   //[next is ...473 so it actually falls back into (1)!]
+	   //[Next, do to lower]
+   0x8048481:	mov    -0xc(%ebp),%eax  //[this movesthe value of -c(ebp) INTO eax]
+   0x8048484:	movb   $0x0,-0x1b(%ebp,%eax,1)
+   0x8048489:	movl   $0x1,-0xc(%ebp)
+   0x8048490:	jmp    0x80484cf
+       //start with the initial letter, no iterating yet *iteration happens at ..cb!//
+
+	2> 0x80484cf:	cmpl   $0xa,-0xc(%ebp) //LOOPS 10 TIMES!
+	   0x80484d3:	jle    0x8048492
+		=> 0x8048492:	mov    -0xc(%ebp),%eax  // EAX = 2 on second pass!
+		   0x8048495:	sub    $0x1,%eax
+		   0x8048498:	movzbl -0x1b(%ebp,%eax,1),%eax
+		   0x804849d:	movsbl %al,%eax
+		   0x80484a0:	mov    %eax,(%esp)              ///$ESP = 'b' on first run
+		   0x80484a3:	call   0x8048388 <tolower@plt>
+		   0x80484a8:	sub    $0x62,%eax          //OOOOOH : Return from to lower and subtract 62 //EAX = 62 [HEX 'b']
+		   0x80484ab:	cmp    $0x18,%eax                //Compare with 18!
+		   0x80484ae:	ja     0x80484cb                 //Unsigned compare -- jumps down to ...cb and iterates 1
+		   //so, this will skip the next section if the ( xletter - x62 = x18 ), so if it is z or (~)| etc
+		   //so what does this next section do?
+
+		   0x80484b0:	mov    $0x1,%edx                 //else moves 1 into edx
+		   0x80484b5:	mov    %edx,%ebx                 //moves edx into ebx //EDX & EBX = 1
+		   0x80484b7:	mov    %eax,%ecx                 //EAX and EXC = 0 on first run
+		   0x80484b9:	shl    %cl,%ebx   //EBX = 1
+		   0x80484bb:	mov    %ebx,%eax                   //EBX & EAX = 1
+		(A)0x80484bd:	and    $0x1501803,%eax       //EAX = 1 //ive had eax = 0 after this and the jump was taken
+		   0x80484c2:	test   %eax,%eax
+		   0x80484c4:	je     0x80484cb            //SO EAX MUST BE ZERO in order to take this jump
+		   //can skip count++ if line A above is results in 0
+		   0x80484c6:	addl   $0x1,-0x10(%ebp)     //otherwise, we ADD ONE TO A COUNT
+		   0x80484ca:	nop
+		   0x80484cb:	addl   $0x1,-0xc(%ebp) //ITERATE 1
+		   ["Loop back to 2"]
+
+	   0x80484d5:	cmpl   $0x4,-0x10(%ebp)      // "x $ebp-0x10" //IF THAT COUNT IS NOT EQUAL TO FOUR jump to f1
+	   0x80484d9:	jne    0x80484f1
+	   0x80484db:	mov    $0x8048604,%eax
+	   0x80484e0:	lea    -0x1b(%ebp),%edx
+	   0x80484e3:	mov    %edx,0x4(%esp)
+	   0x80484e7:	mov    %eax,(%esp)
+	   0x80484ea:	call   0x8048368 <printf@plt>
+	   0x80484ef:	jmp    0x80484fd
+	   0x80484f1:	movl   $0x8048632,(%esp)            < -- jump here if count != 4, thus no unlock
+	   0x80484f8:	call   0x8048378 <puts@plt>
+	   0x80484fd:	add    $0x34,%esp
+	   0x8048500:	pop    %ebx
+	   0x8048501:	pop    %ebp
+	   0x8048502:	ret    
