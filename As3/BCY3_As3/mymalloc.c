@@ -1,3 +1,22 @@
+//11.4.2013 Todo: ok, i have a lot of base functionality down for inititalizing the linked list and pointer tables
+//and adding a few elements to them. 
+
+//TODO: Well, i can start working on free -- I gotta sort the pointer table then binary search for the pointer
+//If it is on the list, start removing that shit --- i have the comp and qsort ready and waiting for this...
+
+//TODO: Well, lets see... the else in my malloc needs another condition (it now unconditional does a dumb brk up) -- 
+//when free is implemented i will need to start considering other cases.
+
+//TODO: free needs to bring down sbrk if its at the end of the list...
+
+//TODO: OHHHH !!!  Well I have this major issue where i need my pointer table to be dynamically sized.... so I guess
+//maybe during init, I can have a pointer to a bunch of mymallocedbrkup space for it -- and a current max size
+//if it gets close to that max size ever, then double it and remalloc some space AND free the space that the array
+//once held.. it will make sense  and it is very important. so technically, the space for the pointer table will be
+//my first node -- its handled by ME and the user should not be able to call free on it (so i may need a "private"
+//implementation of free for this purpose? maybe not.)... no definitely not because the user wont ever really get that 
+//memory address -- k bye now :D
+
 #include <stdio.h>
 
 //---------   Linked List Node Struct
@@ -10,7 +29,7 @@ struct node {
 };
 //---------   Prototypes and declarations
 void *pointer_table[100]; //Declare a pointer table of size 100 which accepts requested memory pointers (supports free)
-int table_size;
+size_t table_size; //size_t is unsigned int, guaranteed to hold an array size
 struct node *first_node;
 struct node *last_node;
 
@@ -108,8 +127,17 @@ void my_free(void* ptr);
 //	 qsort : http://stackoverflow.com/questions/1787996/c-library-function-to-do-sort
 //	... use qsort to SORT the POINTER TABLE before SEARCHING it to find if the pointer has been allocated by a previous call to mymalloc!!!
 
+//&&&& qsort (pointer_table, table_size(-1??), sizeof(*pointer_table??), comp);
+
 //1) deallocates a ptr that was originally allocated by my malloc above -- NEED SOME KIND OF TABLE...
 //2) Coalesce adjacent free blocks
 //3) If the block that touches brk is free, then use sbrk with a negative offset to reduce the size of the heap
 
-void 
+//---------   Compare function for qsort
+int comp (const void *a, const void *b) 
+{
+    int x = *((int*)a);
+    int y = *((int*)b);
+    
+    return (x > y) - (x < y);
+}
