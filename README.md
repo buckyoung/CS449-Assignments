@@ -32,6 +32,11 @@ The second half of the assignment was to crack 3 programs that were provided to 
 
 Program 1: easy to unlock, the required password was moved to a register for a string comparison and was easily found.
 
-Program 2: this program got the local date and required the first letter of the current day and month to unlock. Example, "MO" during a Monday in October.
+Program 2: this program received the local date and required the first letter of the current day and month to unlock. Example, "MO" during a Monday in October.
 
 Program 3: this program was orders of magnitude more difficult. The program was dynamically loaded and couldn't be disassembled nor were there any string compares. It boiled down to this: each character was treated as an integer and sent through a mathematical function. Certain characters, thusly, were deemed special and the 10-character-long password required exactly four special characters. Special characters are: b, c, m, n, v, x, z
+So a working password would be "BaaCaaMaaN" or "BuckBuckaa" etc.
+
+###Assignment 3
+#####My Malloc Implementation
+Create a custom implementation of malloc and free -- along with a driver to test the program. My implementation uses the next-fit algorithm for dynamic memory management.
