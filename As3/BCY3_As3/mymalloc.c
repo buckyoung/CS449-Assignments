@@ -74,8 +74,8 @@ int main (void){ //DEBUG MAIN DEBUG -- keep this debug for the TEST-DRIVER.c
 	}
 	printf("\n");
 
-	printf("\nCalling free on ptr1:\n");
-	my_free(ptr1); 
+	printf("\nCalling free on ptr2:\n");
+	my_free(ptr2); 
 
 	printf("First node: %p  |  Last node: %p\n", first_node, last_node);
 	//print node chain
@@ -88,8 +88,8 @@ int main (void){ //DEBUG MAIN DEBUG -- keep this debug for the TEST-DRIVER.c
 	}
 	printf("\n");
 
-	printf("\nCalling free on ptr2:\n");
-	my_free(ptr2); 
+	/*printf("\nCalling free on ptr2:\n");
+	//my_free(ptr2); 
 
 	printf("First node: %p  |  Last node: %p\n", first_node, last_node);
 	//print node chain
@@ -118,15 +118,54 @@ int main (void){ //DEBUG MAIN DEBUG -- keep this debug for the TEST-DRIVER.c
 		node = node->next_node;
 	}
 	printf("\n");
+	*/
 
-
-	printf("\n/////////Adding First Node\n");
-	ptr1 = my_nextfit_malloc(100);
+	printf("\n/////////Adding ptr1 (150) Node\n");
+	ptr1 = my_nextfit_malloc(150);
 	node = ptr1-sizeof(struct node);
 	printf("Main: Node created with address:%p \n", node);
 	printf("Main: InUseBool: %d, Size: %d, Ptr: %p, Next: %p, Prev: %p \n", node->in_use, node->size, node, node->next_node, node->prev_node); //DEBUG
 	printf("Main: FirstNode:%p, LastNode:%p\n", first_node, last_node);
 
+	printf("Node chain: ");
+	node = first_node;
+	i = 0;
+	while(node != NULL){
+		printf(" -> [%d. (%s | %d)]", i++, (node->in_use)?"USED":"FREE", node->size);
+		node = node->next_node;
+	}
+	printf("\n");
+
+	printf("Lots of stuff is gonna happen...");
+	ptr1 = my_nextfit_malloc(132);
+	my_nextfit_malloc(143);
+	printf("...");
+	ptr2 = my_nextfit_malloc(154);
+	my_free(ptr1);
+	ptr3 = my_nextfit_malloc(10);
+	my_nextfit_malloc(132);
+	my_nextfit_malloc(112);
+	my_free(ptr3);
+	my_free(ptr2);
+	printf("...");
+	my_nextfit_malloc(143);
+	ptr1 = my_nextfit_malloc(23);
+	ptr3 = my_nextfit_malloc(266);
+	my_free(ptr1);
+	printf("...");
+	my_free(ptr3);
+	my_nextfit_malloc(112);
+	my_nextfit_malloc(34);
+	printf("...\n");
+	my_nextfit_malloc(10);
+	printf("FINAL Node chain: ");
+	node = first_node;
+	i = 0;
+	while(node != NULL){
+		printf(" -> [%d. (%s | %d)]", i++, (node->in_use)?"USED":"FREE", node->size);
+		node = node->next_node;
+	}
+	printf("\n");
 }
 
 //---------   My Nextfit Malloc
@@ -142,6 +181,7 @@ void* my_nextfit_malloc(int size){
 	struct node* node;
 
 	if(bool_init_needed){ //used to get things running again!
+		printf("DEBUG: init NEEDED.");//DEBUG
 		bool_init_needed = 0; //No more init needed!
 		//pointer updates
 		ptr = my_malloc_brk_up(size); //This is the first ever created space
@@ -154,10 +194,12 @@ void* my_nextfit_malloc(int size){
 	} else { //if init is not needed:
 		//TODO SEARCH FOR A NODE THAT WILL WORK
 		node = nextfit_search(size);
+		printf("DEBUG: No init needed.");//DEBUG
 		if (node != NULL){
+			printf("DEBUG: node!=null.");//DEBUG
 			//found a spot, take care of everything!
-
 		} else { //Couldnt find a spot, create more (with sbrk)!
+			printf("DEBUG: must sbrk new space");//DEBUG
 			//pointer updates
 			ptr = my_malloc_brk_up(size); //Push up brk
 			//node updates
