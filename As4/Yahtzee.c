@@ -23,7 +23,8 @@ void score_lower();
 void print_total_score();
 void print_scoreboard();
 int comp (const void *, const void *);
-int sl_kind(int, int[]);
+int sl_kind(int, int*);
+int sl_straight(int, int*);
 
 
 //Globals:
@@ -116,7 +117,7 @@ void print_scoreboard(){
 void print_total_score(){
 	int i;
 	int total = 0;
-	
+
 	//Sum Upper section scores
 	for(i = 0; i < 6; i++){ //6 is max in upper section
 		total += upper_section[i];
@@ -143,11 +144,9 @@ void print_total_score(){
 int sl_kind(int kind, int *values){
 	int run, i, j;
 
-
-
-	for (j = 1; j <= 6; j++){
+	for (j = 1; j <= 6; j++){ //cycle all possible dice values
 		run = 0;
-		for (i = 0; i < 5; i++){
+		for (i = 0; i < 5; i++){ //cycle all dice
 			if (values[i] == j){
 				run++;
 			}
@@ -158,8 +157,32 @@ int sl_kind(int kind, int *values){
 	}
 
 	return 0; //FALSE
-
 }
+
+/*
+ * Returns BOOLEAN if small/large straight exists
+ */
+int sl_straight(int target_length, int *values){
+	int run, start, i, j, k, n;
+
+	for(i=0;i<2;i++){ //cycle first two dice in sorted array (run of 4 or 5 only!)
+		start = values[i];
+		k = i; 
+		for (j=start; j<start+target_length; j++){ //try to parse a straight
+			if (j != values[k++]){
+				printf("Lost it!!!!!!");//DEBUG
+				return 0; //FALSE
+			}
+			run++;
+		}
+		if (run == target_length){
+			return 1; //TRUE
+		}
+	}
+
+	return 0;//FALSE
+
+} 
 
 /*
  *  Calculates score for LOWER section
@@ -204,12 +227,19 @@ void score_lower(int selection){
 		break;
 
 		case 3: //Small Straight: if good, +30
-
+			if(sl_straight(4, values)){ //if four in a row
+				total = 30;
+			}
 		break;
 
 		case 4: //Large Straight: if good, +40
+			if(sl_straight(5, values)){ //if five in a row
+				total = 40;
+			}
 		break;
+
 		case 5: //Full House: if good, +25
+			total = 25;
 		break;
 
 		case 6: //Yahtzee!: if good, +50
@@ -223,6 +253,11 @@ void score_lower(int selection){
 		break;
 
 		case 7: //Chance: +Total of all dice
+			node = first_node;
+			while(node != NULL){ //+total all dice
+				total += node->die_value;
+				node = node->next;
+			}
 		break;
 
 		//Do nothing
