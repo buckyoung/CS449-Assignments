@@ -25,6 +25,8 @@ void print_scoreboard();
 int comp (const void *, const void *);
 int sl_kind(int, int*);
 int sl_straight(int, int*);
+void unique (int*);
+int sl_fullhouse(int*);
 
 
 //Globals:
@@ -138,6 +140,37 @@ void print_total_score(){
 }
 
 /*
+ *  returns BOOLEAN -- 1 if fullhouse exists, 0 if not
+ */
+int sl_fullhouse(int* values){
+	int i, j;
+	int freq_a = 1;
+	int freq_b = 0;
+
+	int a = values[0];
+	int b = 0;
+
+	for(i = 1; i < 5; i++){
+		if (values[i] == a){
+			freq_a += 1;
+		} else {
+			if (b == 0){ //we found a new number
+				b = values[i];
+				freq_b = 1;
+			} else if (values[i] == b){
+				freq_b += 1;
+			}
+		}
+	}
+
+	if ((freq_a == 2 && freq_b == 3) || (freq_a == 3 && freq_b == 2)){
+		return 1; //TRUE
+	}
+
+	return 0; //FALSE
+}
+
+/*
  *  (s)core (l)ower / 3,4,5 of a kind 
  *	Returns BOOLEAN -- 1 if _ of a kind exists, 0 if it does not
  */
@@ -165,19 +198,23 @@ int sl_kind(int kind, int *values){
 int sl_straight(int target_length, int *values){
 	int run, start, i, j, k, n;
 
+	unique(values);
+
 	for(i=0;i<2;i++){ //cycle first two dice in sorted array (run of 4 or 5 only!)
 		start = values[i];
 		k = i; 
 		for (j=start; j<start+target_length; j++){ //try to parse a straight
 			if (j != values[k++]){
-				printf("Lost it!!!!!!");//DEBUG
 				return 0; //FALSE
 			}
+
 			run++;
+
+			if (run == target_length){
+				return 1; //TRUE
+			}
 		}
-		if (run == target_length){
-			return 1; //TRUE
-		}
+		
 	}
 
 	return 0;//FALSE
@@ -239,7 +276,9 @@ void score_lower(int selection){
 		break;
 
 		case 5: //Full House: if good, +25
-			total = 25;
+			if(sl_fullhouse(values)){
+				total = 25;
+			}
 		break;
 
 		case 6: //Yahtzee!: if good, +50
@@ -407,14 +446,53 @@ void init_nodes(){
 
 /*
  *  Comparison function for qsort
- *  Copied from User: RERUN on stackOverflow:
- *  http://stackoverflow.com/questions/1787996/c-library-function-to-do-sort
  */ 
-int comp (const void * elem1, const void * elem2) 
-{
+int comp (const void * elem1, const void * elem2) {
     int f = *((int*)elem1);
     int s = *((int*)elem2);
+
+    if (f == 0){
+    	return 1;
+    }
+    if (s == 0){
+    	return -1;
+    }
+
     if (f > s) return  1;
     if (f < s) return -1;
     return 0;
+}
+
+/*
+ *  Unique function for removing duplicates
+ */
+void unique (int* values){
+	int one, two, three, four, five;
+	one = values[0];
+	two = values[1];
+	three = values[2];
+	four = values[3];
+	five = values[4];
+
+	if (four == five){
+		five = 0;
+	}
+	if (three == four){
+		four = 0;
+	}
+	if (two == three){
+		three = 0;
+	}
+	if (one == two){
+		two = 0;
+	}
+
+	values[0] = one;
+	values[1] = two;
+	values[2] = three;
+	values[3] = four;
+	values[4] = five;
+
+	qsort (values, 5, sizeof(int), comp); //sort array
+
 }
