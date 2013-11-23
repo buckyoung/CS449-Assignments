@@ -27,6 +27,8 @@ int sl_kind(int, int*);
 int sl_straight(int, int*);
 void unique (int*);
 int sl_fullhouse(int*);
+char *int_to_string(int);
+void reverse(char*, int);
 
 
 //Globals:
@@ -38,10 +40,19 @@ int lower_section[7];
 
 //Main:
 int main(){
+	int i;
 
 	//Create and Initialize Linked List of Dice:
  	first_node = malloc(sizeof(die_node) * 5);
  	init_nodes(first_node); //initialize linked list
+
+ 	//Initialize Upper and Lower with -1 (to support "no showing" of the score on Unscored sections)
+ 	for(i = 0; i < 6; i++){
+ 		upper_section[i] = -1;
+ 	}
+ 	for(i = 0; i < 7; i++){
+ 		lower_section[i] = -1;
+ 	}
 
  	//Start the fun!
 	play_game();
@@ -113,11 +124,9 @@ int main(){
  *  Prints scoreboard 
  */
 void print_scoreboard(){
-
-	printf("\nOnes: %d \t\t\tFours: %d\nTwos: %d\t\t\t\tFives: %d\nThrees: %d\t\t\tSixes: %d\n", upper_section[0], upper_section[3], upper_section[1], upper_section[4], upper_section[2], upper_section[5]);
+	printf("\nOnes: %s \t\t\tFours: %s\nTwos: %s\t\t\t\tFives: %s\nThrees: %s\t\t\tSixes: %s\n", (upper_section[0] == -1)?" ":int_to_string(upper_section[0]), (upper_section[3] == -1)?" ":int_to_string(upper_section[3]), (upper_section[1] == -1)?" ":int_to_string(upper_section[1]), (upper_section[4] == -1)?" ":int_to_string(upper_section[4]), (upper_section[2] == -1)?" ":int_to_string(upper_section[2]), (upper_section[5] == -1)?" ":int_to_string(upper_section[5]));
 	printf("Upper Section Bonus: %d\n", upper_bonus);
- 	printf("Three of a kind: %d\t\tFour of a kind: %d\nSmall straight: %d\t\tLarge straight: %d\nFull house: %d\t\t\tYahtzee: %d\nChance: %d\n", lower_section[0], lower_section[1], lower_section[2], lower_section[3], lower_section[4], lower_section[5], lower_section[6]);
-
+ 	printf("Three of a kind: %s\t\tFour of a kind: %s\nSmall straight: %s\t\tLarge straight: %s\nFull house: %s\t\t\tYahtzee: %s\nChance: %s\n", (lower_section[0] == -1)?" ":int_to_string(lower_section[0]), (lower_section[1] == -1)?" ":int_to_string(lower_section[1]), (lower_section[2] == -1)?" ":int_to_string(lower_section[2]), (lower_section[3] == -1)?" ":int_to_string(lower_section[3]), (lower_section[4] == -1)?" ":int_to_string(lower_section[4]), (lower_section[5] == -1)?" ":int_to_string(lower_section[5]), (lower_section[6] == -1)?" ":int_to_string(lower_section[6]));
 }
 
 /*
@@ -129,7 +138,9 @@ void print_total_score(){
 
 	//Sum Upper section scores
 	for(i = 0; i < 6; i++){ //6 is max in upper section
-		total += upper_section[i];
+		if(upper_section[i] > 0){  //Only add positive values (ignore initialization values)
+			total += upper_section[i];
+		}
 	}
 
 	//Bonus for upper section
@@ -140,7 +151,9 @@ void print_total_score(){
 
 	//Sum Lower section scores
 	for(i = 0; i < 7; i++){ //7 is max in lower section
-		total += lower_section[i];
+		if (lower_section[i] > 0){   //Only add positive values (ignore initialization values)
+			total += lower_section[i];
+		}
 	}
 
 	printf("\nYour score so far is: %d\n", total);
@@ -517,4 +530,38 @@ void unique (int* values){
 
 	qsort (values, 5, sizeof(int), comp); //sort array
 
+}
+
+/*
+ * Implementation of Integer to String
+ */
+char *int_to_string(int n){
+	char *out = malloc(sizeof(char)*10);
+    // if negative, need 1 char for the sign
+    int sign = n < 0? 1: 0;
+    int i = 0;
+    if (n == 0) {
+        out[i++] = '0';
+    } else if (n < 0) {
+        out[i++] = '-';
+        n = -n;
+    }
+    while (n > 0) {
+        out[i++] = '0' + n % 10;
+        n /= 10;
+    }
+    out[i] = '\0';
+    reverse(out + sign, i - sign);
+    return out;
+}
+//Reverse function for i to a above ^
+void reverse(char* str, int length){
+    int i = 0, j = length-1;
+    char tmp;
+    while (i < j) {
+        tmp = str[i];
+        str[i] = str[j];
+        str[j] = tmp;
+        i++; j--;
+    }
 }
