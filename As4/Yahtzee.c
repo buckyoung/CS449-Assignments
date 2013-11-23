@@ -17,7 +17,7 @@ void roll_dice();
 void print_dice();
 short get_rand_die();
 void additional_rolls();
-void reset_dice();
+void reset_dice(int);
 void score_upper();
 void score_lower();
 void print_total_score();
@@ -60,6 +60,7 @@ int main(){
  	int i, j;
  	int selection;
  	die_node* node;
+ 	char *user_input = malloc(sizeof(char)*10);
 
 	//Game Loop:
  	while(current_turn <= 13){
@@ -76,20 +77,24 @@ int main(){
  		printf("Place dice into section:\n");
  		printf("1) Upper Section\n2) Lower Section\n");
  		printf("Selection? ");
- 		scanf("%d", &selection); //get user input
+ 		fgets(user_input, sizeof(int), stdin); //get user input
+ 		selection = atoi(user_input);
 
  		printf("\nPlace dice into: \n");
  		if(selection == 1){//Upper section
  			printf("1) Ones\n2) Twos\n3) Threes\n4) Fours\n5) Fives\n6) Sixes\n");
  			printf("Selection? ");
-			scanf("%d", &selection);
+			fgets(user_input, sizeof(int), stdin); //get user input
+ 			selection = atoi(user_input);
 			score_upper(selection); //Handle Scoreboard
  		} else if (selection == 2) { //Lower Section
  			printf("1) Three of a kind\n2) Four of a kind\n3) Small straight\n4) Large straight\n5) Full house\n6) Yahtzee\n7) Chance\n");
 			printf("Selection? ");
-			scanf("%d", &selection);
+			fgets(user_input, sizeof(int), stdin); //get user input
+ 			selection = atoi(user_input);
 			score_lower(selection);
  		}
+
 
 		print_total_score(); //Print score
 		print_scoreboard(); //Display scoreboard (upper and lower sections)
@@ -97,8 +102,10 @@ int main(){
 		//Loop 13 times//
 		current_turn++;
 		//Reset all dice (Need rerolled!)
-		reset_dice();
+		reset_dice(1);
 	}
+
+	free(user_input);
 
 }
 
@@ -326,13 +333,13 @@ void score_upper(int selection){
 }
 
 /*
- *  Resets ALL dice for rerolling
+ *  Resets ALL dice for rerolling if b = 1, and not rerolling if b = 0
  */
-void reset_dice(){
+void reset_dice(int b){
 	die_node* node = first_node;
 
 	while (node != NULL){
-		node->reroll_bool = 1; //True, must reroll!
+		node->reroll_bool = b; //True/False
 		node = node->next;
 	}
 
@@ -344,17 +351,29 @@ void reset_dice(){
  */
 void additional_rolls(){
 	int j, i, selection;
+	char *token;
 	int reroll_input[6];
 	die_node* node;
+	char *user_input = malloc(sizeof(char)*10);
 
  		for(j=0; j<2; j++){
- 			printf("Which dice to reroll? [Enter one at a time] [0 when done]\n");
- 			//Parse input
- 				i = 0;
- 				do{
- 					scanf("%d", &selection);
- 					reroll_input[i++] = selection;
- 				} while (selection != 0);
+ 			
+ 			
+ 			for(i = 0; i < 6; i++){ //reset 
+ 				reroll_input[i] = 0;
+ 			}
+
+ 			printf("Which dice to reroll?\n");
+ 			//Get input
+ 			fgets(user_input, 10, stdin);
+
+ 			//Parse input to reroll array
+ 			i = 0;
+ 			token = strtok(user_input, " "); //get first token
+ 			while (token != NULL){
+ 				reroll_input[i++] = atoi(token); //string to int convert
+ 				token = strtok(NULL, " "); //get next token
+ 			}
 
  			//Check if user entered 0 as the first input
  			if(reroll_input[0] == 0){ //user does not want to reroll any dice
@@ -383,7 +402,9 @@ void additional_rolls(){
 			roll_dice(); //Get dice roll
 			print_dice(); //Print dice roll
 
+			
 		} //End Rerollings
+		free(user_input);
 }
 
 /*
@@ -416,10 +437,11 @@ void roll_dice(){
 	while (node != NULL){
 		if(node->reroll_bool != 0){ //!0 = True, so reroll it!
 			node->die_value = get_rand_die();
-			node->reroll_bool = 0; //False, do not reroll
 		}
 		node = node->next;
 	}
+
+	reset_dice(0); // none need rerolled
 
 }
 
