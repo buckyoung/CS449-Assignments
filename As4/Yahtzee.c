@@ -364,7 +364,7 @@ void reset_dice(int b){
  */
 void additional_rolls(){
 	int j, i, selection;
-	char *token;
+	char *token = malloc(sizeof(char));
 	int reroll_input[6];
 	die_node* node;
 	char *user_input = malloc(sizeof(char)*10);
@@ -418,13 +418,40 @@ void additional_rolls(){
 			
 		} //End Rerollings
 		free(user_input);
+		free(token);
 }
 
 /*
  *  Returns one random die roll
  */
 short get_rand_die(){
-	return ((rand() % 6) + 1);
+	
+	FILE* f;
+	char result; //one byte!
+	int read;
+
+
+	f = fopen("/dev/dice", "r");
+
+	if (fopen == NULL){ //Sanity check -- should never happen!
+		printf("\nERROR: Failed to open /dev/dice, returning rand() value\n");
+		return ((rand()%6)+1);
+	}
+	
+	do{ 
+		//Maybe fseek to position 0?
+		read = fread(&result, sizeof(char), 1, f);
+	} while (read !=1); //Try to read one byte -- keep doing it until it works!
+
+	if ( !((result <= 6) && (result >= 1)) ){ //Sanity check -- should never happen!
+		printf("\nERROR: Die value read from /dev/dice was %d\n Returning rand() value\n", result);
+		return ((rand()%6)+1); 
+	}
+
+	fclose(f);
+
+	return result;
+
 }
 
 /*
