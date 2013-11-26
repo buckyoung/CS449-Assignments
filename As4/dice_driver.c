@@ -23,20 +23,28 @@ static ssize_t dice_read(struct file * file, char * buf,
 			  size_t count, loff_t *ppos) 
 {
 
-	char i;
-	get_random_bytes(&i, 1); //gets one byte and stores it in i
+	if(count<1){
+		return -EINVAL;
+	}
+	
+	if(*ppos != 0){
+		return 0;
+	}
+	
+	unsigned char data;
+	get_random_bytes(&data, sizeof(char)); //get a byte of info
+  
 
-	int len;
-	len = sizeof(char); 
+	data = (data %6) + 1; //scales the random data to 1-6
 
-	copy_to_user(buf, i, len); //COPY INFO TO USER
+	if (copy_to_user(buf, &data, sizeof(ushort)/2)){
+		return -EINVAL;
+	}
 
-	/*
-	 * Tell the user how much data we wrote.
-	 */
-	*ppos = len;
+	*ppos = 1;
 
-	return len;
+	return 1;
+
 }
 
 /*

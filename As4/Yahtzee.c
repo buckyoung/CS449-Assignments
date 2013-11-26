@@ -2,49 +2,43 @@
 #include <stdlib.h>
 #include <string.h>
 
-//Structs:
-typedef struct die_node{
- 	struct die_node* next; // Next node
-	short reroll_bool;     // 0=False, !0=True
-	short die_number;      // 1-5 
-	short die_value;       // 1-6
-} die_node; 
-
 //Prototypes:
 void play_game();
-void init_nodes();
+void init_dice_arrays();
 void roll_dice();
 void print_dice();
-short get_rand_die();
+char get_rand_die();
 void additional_rolls();
 void reset_dice(int);
-void score_upper();
-void score_lower();
+void score_upper(int);
+void score_lower(int);
 void print_total_score();
 void print_scoreboard();
 int comp (const void *, const void *);
-int sl_kind(int, int*);
-int sl_straight(int, int*);
-void unique (int*);
-int sl_fullhouse(int*);
+int sl_kind(int, char*);
+int sl_straight(int, char*);
+void unique (char*);
+int sl_fullhouse(char*);
 char *int_to_string(int);
 void reverse(char*, int);
 
 
 //Globals:
-die_node* first_node;
 int upper_section[6];
 int upper_bonus;
 int lower_section[7];
+//Dice Helpers
+int reroll_bool[5];
+char die_value[5];
 
 
 //Main:
 int main(){
+
 	int i;
 
 	//Create and Initialize Linked List of Dice:
- 	first_node = malloc(sizeof(die_node) * 5);
- 	init_nodes(first_node); //initialize linked list
+ 	init_dice_arrays(); //initialize helper arrays
 
  	//Initialize Upper and Lower with -1 (to support "no showing" of the score on Unscored sections)
  	for(i = 0; i < 6; i++){
@@ -64,14 +58,13 @@ int main(){
  *  Game Loop
  */
  void play_game(){
-
 	//Initializations:
  	int total_score = 0;
  	int current_turn = 1;
  	int i, j;
  	int selection;
- 	die_node* node;
- 	char *user_input = malloc(sizeof(char)*10);
+ 	char *user_input = malloc(sizeof(char)*10); //?
+
 
 	//Game Loop:
  	while(current_turn <= 13){
@@ -110,13 +103,13 @@ int main(){
 		print_total_score(); //Print score
 		print_scoreboard(); //Display scoreboard (upper and lower sections)
 
-		//Loop 13 times//
+		//Loop 13 times
 		current_turn++;
 		//Reset all dice (Need rerolled!)
 		reset_dice(1);
 	}
 
-	free(user_input);
+	   free(user_input); //?
 
 }
 
@@ -162,13 +155,13 @@ void print_total_score(){
 /*
  *  returns BOOLEAN -- 1 if fullhouse exists, 0 if not
  */
-int sl_fullhouse(int* values){
+int sl_fullhouse(char* values){
 	int i, j;
 	int freq_a = 1;
 	int freq_b = 0;
 
-	int a = values[0];
-	int b = 0;
+	char a = values[0];
+	char b = 0;
 
 	for(i = 1; i < 5; i++){
 		if (values[i] == a){
@@ -194,7 +187,7 @@ int sl_fullhouse(int* values){
  *  (s)core (l)ower / 3,4,5 of a kind 
  *	Returns BOOLEAN -- 1 if _ of a kind exists, 0 if it does not
  */
-int sl_kind(int kind, int *values){
+int sl_kind(int kind, char *values){
 	int run, i, j;
 
 	for (j = 1; j <= 6; j++){ //cycle all possible dice values
@@ -215,29 +208,25 @@ int sl_kind(int kind, int *values){
 /*
  * Returns BOOLEAN if small/large straight exists
  */
-int sl_straight(int target_length, int *values){
-	int run, start, i, j, k, n;
+int sl_straight(int target_length, char *values){
+	int i;
+	int run = 1;
 
-	unique(values);
+	unique(values); //Delete duplicates in values[]
 
-	for(i=0;i<2;i++){ //cycle first two dice in sorted array (run of 4 or 5 only!)
-		start = values[i];
-		k = i; 
-		for (j=start; j<start+target_length; j++){ //try to parse a straight
-			if (j != values[k++]){
-				return 0; //FALSE
-			}
-
+	for (i = 0; i < target_length-1; i++){
+		if(values[i+1] == (values[i]+1)){ //check if next # in sequence is one above the current i # (2,3 yeilds "if 3 == 3") || ie: check for a straight!
 			run++;
-
-			if (run == target_length){
-				return 1; //TRUE
-			}
+		} else { //reset run
+			return 0; //FALSE -- CANNOT BE A STRAIGHT
 		}
-		
 	}
 
-	return 0;//FALSE
+	if (run == target_length){
+		return 1; //TRUE! Its a straight of (length)
+	}
+
+	return 0;//FALSE -- safety check
 
 } 
 
@@ -247,17 +236,14 @@ int sl_straight(int target_length, int *values){
 void score_lower(int selection){
 	int index = selection-1;
 	int total = 0;
-	die_node* node = first_node;
-	int values[5];
+	char values[5];
 	int i;
 
 	//Sort the dice:
-	i = 0;
-	while(node != NULL){
-		values[i++] = node->die_value; //store dice into array to be sorted
-		node = node->next;
+	for(i = 0; i < 5; i++){
+		values[i] = die_value[i];
 	}
-	qsort (values, 5, sizeof(int), comp); //sort array
+	qsort (values, 5, sizeof(char), comp); //sort array
 
 	// * * *  Dice are now sorted in values[]  * * *
 
@@ -265,20 +251,16 @@ void score_lower(int selection){
 	switch(selection){
 		case 1: //Three of a kind: if good, +total of all dice
 			if(sl_kind(3, values)){ //if good
-				node = first_node;
-				while(node != NULL){ //+total all dice
-					total += node->die_value;
-					node = node->next;
+				for(i = 0; i < 5; i++){
+					total+=die_value[i];
 				}
 			}
 		break;
 
 		case 2: //Four of a kind: if good, +total of all dice
 			if(sl_kind(4, values)){
-				node = first_node;
-				while(node != NULL){ //+total all dice
-					total += node->die_value;
-					node = node->next;
+				for(i = 0; i < 5; i++){
+					total+= die_value[i];
 				}
 			}
 		break;
@@ -303,19 +285,15 @@ void score_lower(int selection){
 
 		case 6: //Yahtzee!: if good, +50
 			if(sl_kind(5, values)){
-				node = first_node;
-				while(node != NULL){ //+total all dice
-					total += node->die_value;
-					node = node->next;
+				for(i = 0; i < 5; i++){
+					total+= die_value[i];
 				}
 			}
 		break;
 
 		case 7: //Chance: +Total of all dice
-			node = first_node;
-			while(node != NULL){ //+total all dice
-				total += node->die_value;
-				node = node->next;
+			for(i = 0; i < 5; i++){
+				total+= die_value[i];		
 			}
 		break;
 
@@ -330,15 +308,14 @@ void score_lower(int selection){
  */ 
 void score_upper(int selection){
 	int index = selection-1;
-	int quantity;
-	die_node* node = first_node;
+	int quantity = 0;
+	int i;
 	
 	//Get quantity:
-	while(node != NULL){
-		if(node->die_value == selection){
+	for(i = 0; i < 5; i++){
+		if (die_value[i] == selection){
 			quantity++;
 		}
-		node = node->next;
 	}
 
 	//Calculate and store score
@@ -349,28 +326,23 @@ void score_upper(int selection){
  *  Resets ALL dice for rerolling if b = 1, and not rerolling if b = 0
  */
 void reset_dice(int b){
-	die_node* node = first_node;
-
-	while (node != NULL){
-		node->reroll_bool = b; //True/False
-		node = node->next;
+	int i;
+	for(i = 0; i < 5; i++){
+		reroll_bool[i] = b;
 	}
-
-
 }
 
 /*
  *  Handles the logic for roll 2 and 3 if the user chooses to reroll any dice
  */
 void additional_rolls(){
-	int j, i, selection;
-	char *token = malloc(sizeof(char));
+	int j, i;
+	char selection;
+	char *token;
 	int reroll_input[6];
-	die_node* node;
-	char *user_input = malloc(sizeof(char)*10);
+	char user_input[10];
 
  		for(j=0; j<2; j++){
- 			
  			
  			for(i = 0; i < 6; i++){ //reset 
  				reroll_input[i] = 0;
@@ -397,16 +369,8 @@ void additional_rolls(){
  			i = 0; 
  			do {
  				selection = reroll_input[i++];
-	
-				//parse thru linked list of die
  				if (selection != 0){
-					node = first_node;//init before while
-					while (node != NULL){
-						if (node->die_number == selection){
-							node->reroll_bool = 1; //True, need to reroll!
-						}
-						node = node->next;
-					}
+ 					reroll_bool[selection-1] = 1; //True, must reroll!
 				}
 			} while (selection != 0);
 
@@ -417,23 +381,20 @@ void additional_rolls(){
 
 			
 		} //End Rerollings
-		free(user_input);
-		free(token);
+
 }
 
 /*
  *  Returns one random die roll
  */
-short get_rand_die(){
-	
+char get_rand_die(){
 	FILE* f;
 	char result; //one byte!
 	int read;
 
-
 	f = fopen("/dev/dice", "r");
 
-	if (fopen == NULL){ //Sanity check -- should never happen!
+	if (f == NULL){ //Sanity check -- should never happen!
 		printf("\nERROR: Failed to open /dev/dice, returning rand() value\n");
 		return ((rand()%6)+1);
 	}
@@ -443,6 +404,7 @@ short get_rand_die(){
 		read = fread(&result, sizeof(char), 1, f);
 	} while (read !=1); //Try to read one byte -- keep doing it until it works!
 
+
 	if ( !((result <= 6) && (result >= 1)) ){ //Sanity check -- should never happen!
 		printf("\nERROR: Die value read from /dev/dice was %d\n Returning rand() value\n", result);
 		return ((rand()%6)+1); 
@@ -451,34 +413,29 @@ short get_rand_die(){
 	fclose(f);
 
 	return result;
-
 }
 
 /*
  *  Prints the dice values
  */
 void print_dice(){
-	die_node* node = first_node;
-	
-	while (node != NULL){
-		printf(" %d ", node->die_value);
-		node = node->next;
+	int i;
+	for(i = 0; i < 5; i++){
+		printf(" %d ", die_value[i]);
 	}
 	printf("\n\n");
 
 }
 
 /*
- *  Fills the linked list with dice rolls
+ *  Reroll if needed
  */
 void roll_dice(){
-	die_node* node = first_node;
-
-	while (node != NULL){
-		if(node->reroll_bool != 0){ //!0 = True, so reroll it!
-			node->die_value = get_rand_die();
+	int i;
+	for(i = 0; i < 5; i++){
+		if(reroll_bool[i] != 0){ //!0 = True, so rerol!
+			die_value[i] = get_rand_die();
 		}
-		node = node->next;
 	}
 
 	reset_dice(0); // none need rerolled
@@ -486,50 +443,40 @@ void roll_dice(){
 }
 
 /*
- *  Initializes a linked-list of 5 dice
+ *  Initializes the helper arrays
  */
-void init_nodes(){
-	die_node* node = first_node;
-	short die_number;
-	void* next;
+void init_dice_arrays(){
+	int i;
 
-	for (die_number = 1; die_number<=5; die_number++ ){
-		next = node+sizeof(die_node);
-		node->next = next;
-		node->reroll_bool = 1;
-		node->die_number = die_number;
-		node->die_value = 0;
-		node = next;
+	for (i = 0; i < 5; i++){
+		reroll_bool[i] = 1; //reroll!
+		die_value[i] = 0; //init to 0
 	}
-	node = node-sizeof(die_node);
-	node->next = NULL;
 
 }
 
 /*
  *  Comparison function for qsort
  */ 
-int comp (const void * elem1, const void * elem2) {
-    int f = *((int*)elem1);
-    int s = *((int*)elem2);
+int comp (const void * e1, const void * e2) {
+   char c1 = *(char*)e1; 
+   char c2 = *(char*)e2; 
 
-    if (f == 0){
+    if (c1 == 0){
     	return 1;
     }
-    if (s == 0){
+    if (c2 == 0){
     	return -1;
     }
 
-    if (f > s) return  1;
-    if (f < s) return -1;
-    return 0;
+   return c1 - c2; 
 }
 
 /*
  *  Unique function for removing duplicates
  */
-void unique (int* values){
-	int one, two, three, four, five;
+void unique (char* values){
+	char one, two, three, four, five;
 	one = values[0];
 	two = values[1];
 	three = values[2];
@@ -555,7 +502,7 @@ void unique (int* values){
 	values[3] = four;
 	values[4] = five;
 
-	qsort (values, 5, sizeof(int), comp); //sort array
+	qsort (values, 5, sizeof(char), comp); //sort array
 
 }
 
@@ -563,7 +510,7 @@ void unique (int* values){
  * Implementation of Integer to String
  */
 char *int_to_string(int n){
-	char *out = malloc(sizeof(char)*10);
+	 char *out = malloc(sizeof(char)*10);
     // if negative, need 1 char for the sign
     int sign = n < 0? 1: 0;
     int i = 0;
