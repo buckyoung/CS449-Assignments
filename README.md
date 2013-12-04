@@ -44,3 +44,7 @@ Created a custom implementation of malloc and free -- along with a driver to tes
 ###Assignment 4
 #####Linux Device Driver and Yahtzee
 My introduction to Linux device drivers and virtual file systems. Created a virtual file ("/dev/dice") which returns a one-byte number, in the range of 1-6 inclusive. Also built an implementation of Yahtzee to test the dice-rolling feature of this file. 
+
+###Assignment 5
+#####Custom POSIX Shell
+Shellax is a custom POSIX shell written in C. 
