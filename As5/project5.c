@@ -133,7 +133,6 @@ void child(char *command){
  		argv[argc] = NULL; //Delimit list with NULL at argc
  	}
 
- 	 
 
  	//Call program and error cases//
  	if ( execvp(command, argv) == -1 ){
@@ -231,16 +230,3 @@ void re_in(char* filename){
 	}	
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
