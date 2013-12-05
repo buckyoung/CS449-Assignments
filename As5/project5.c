@@ -12,9 +12,14 @@ void child(char *);
 void append(char *);
 void re_out(char *);
 void re_in(char *);
+int determine_file_action(char *, int, int, int);
+int redirect_set(char *);
+
+//Globals:
+int a, o, i; //Booleans for appean, redirect_out, and redirect_in
 
 
-//Functions:
+//Usage:
 int main(void){
 	//Declaration:
 	char *user_input = malloc(sizeof(char)*100);
@@ -24,8 +29,17 @@ int main(void){
 	printf("\n\t\t     Welcome to Shellax\n\tA POSIX Shell by Buck Young (bcy3@pitt.edu)\n\n");//Welcome message
 
 	while(1){
+		//Reinit booleans
+		a=0;
+		o=0;
+		i=0;
+
 		printf("shellax-1.0$ "); //user prompt
 		if( fgets(user_input, 100, stdin) != NULL ){ //GET LINE FROM USER
+
+			//before tokenizing, check for redirects
+			redirect_set(user_input);
+
 			command = strtok(user_input, " \t\n()<>|&;"); //get first token (will be command)
 			switch_command(command); //Determine what command it is!
 		}
@@ -94,46 +108,32 @@ void posix_program(char *command){
 void child(char *command){
 	//Init:
 	char *token = malloc(sizeof(char)*100);
-	char *tmp = malloc(sizeof(char)*100);
-	char *argv[10];
+	char *filename = malloc(sizeof(char)*100);
+	char *argv[20];
 	int argc = 0;
 
-	//init
-	tmp = NULL;
 	//Put command into array[0]
 	argv[argc++] = command; //argc now equals 1!
 
-	//Get any parameters:
-	token = strtok(NULL, " \t\n()|&;"); //get next token 
+	//Store any parameters (could include a filename!!!)
+	token = strtok(NULL, " \t\n()<>|&;"); //get next token 
 	while (token != NULL){
-
-		argv[argc++] = token;
- 		token = strtok(NULL, " \t\n()|&;"); //get next token 
-
- 		if (token != NULL){
-	 		//check for redirects!
-	 		tmp = strstr(token, ">>"); //if append is in there, tmp will contain ">> ", else NULL
-			if (tmp != NULL){
-				tmp = strtok(NULL, " \t\n()|&;"); //get next token (will be filename)
-				append(tmp);
-				break;
-			}
-			tmp = strstr(token, ">"); //if redirect out
-			if (tmp != NULL){
-				tmp = strtok(NULL, " \t\n()|&;"); //get next token (will be filename)
-				re_out(tmp);
-				break;
-			}
-			tmp = strstr(token, "<"); //if redirect in
-			if (tmp != NULL){
-				tmp = strtok(NULL, " \t\n()|&;"); //get next token (will be filename)
-				re_in(tmp);
-				break;
-			}
-		}
-
+		argv[argc++] = token; //store token in parameter list
+ 		token = strtok(NULL, " \t\n()<>|&;"); //get next token 
  	}
- 	argv[argc] = NULL; //Delimit list with NULL 
+
+ 	if (a || o || i){ //If we need to redirect
+ 		//get filename from argc-1, then set that to NULL
+ 		argc--;
+ 		filename = argv[argc];
+ 		argv[argc] = NULL;
+ 		//set stream
+ 		determine_file_action(filename, a, o, i);
+ 	} else {
+ 		argv[argc] = NULL; //Delimit list with NULL at argc
+ 	}
+
+ 	 
 
  	//Call program and error cases//
  	if ( execvp(command, argv) == -1 ){
@@ -143,12 +143,54 @@ void child(char *command){
 	exit(EXIT_SUCCESS); //Safety exit -- shouldnt really happen
 }
 
+//Sets a, o, i booleans if a redirect is needed
+int redirect_set(char *user_input){
+	char *tmp = malloc(sizeof(char)*100);
+
+	//if append 
+	tmp = strstr(user_input, ">>"); 
+	if (tmp != NULL){
+		a = 1; //true
+		return 0;
+	}
+
+	//if redirect out
+	tmp = strstr(user_input, ">"); 
+	if (tmp != NULL){
+		o = 1; //true
+		return 0;
+	}
+
+	//if redirect in
+	tmp = strstr(user_input, "<"); 
+	if (tmp != NULL){
+		i = 1; //true
+		return 0;
+	}
+
+}
+
+//Determines if we should append, out, or in, the input/output stream
+int determine_file_action(char* filename, int a, int o, int i){
+	if (a){
+		append(filename);
+		return 0;
+	}
+	if (o){
+		re_out(filename);
+		return 0;
+	}
+	if (i){
+		re_in(filename);
+		return 0;
+	}
+
+}
+
 //append logic -- sets stream to append
 //Accepts untokenized filename
 void append(char* filename){
 	FILE *f;
-
-	filename = strtok(filename, " \t\n"); //clean up token (will be filename)
 
 	//Set stream (freopen)
 	if (filename != NULL){ //We need to freopen it and set the stream!
@@ -165,8 +207,6 @@ void append(char* filename){
 void re_out(char* filename){
 	FILE *f;
 
-	filename = strtok(filename, " \t\n"); //clean up token (will be filename)
-
 	//Set stream (freopen)
 	if (filename != NULL){ //We need to freopen it and set the stream!
 		f = freopen(filename, "w", stdout); //FREopen
@@ -181,8 +221,6 @@ void re_out(char* filename){
 //Accepts untokenized filename
 void re_in(char* filename){
 	FILE *f;
-
-	filename = strtok(filename, " \t\n"); //clean up token (will be filename)
 
 	//Set stream (freopen)
 	if (filename != NULL){ //We need to freopen it and set the stream!
