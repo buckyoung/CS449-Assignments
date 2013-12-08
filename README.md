@@ -47,4 +47,4 @@ My introduction to Linux device drivers and virtual file systems. Created a virt
 
 ###Assignment 5
 #####Custom POSIX Shell
-Shellax is a custom POSIX shell written in C. 
+Created "Shellax," a custom POSIX shell written in C. Shellax can navigate POSIX filesystems with "cd" and can execute any PATH process using fork() and execvp(). Furthermore, this shell is capable of stream redirection to and from files. Shellax is also designed to handle error cases gracefully and be an all-around pleasant experience; just try saying "hello" to it!

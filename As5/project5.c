@@ -78,11 +78,11 @@ void cd(void){
 		//Error cases//
 		if ( chdir(token) != 0 ){
 			if (errno == 2){
-				printf("-shellax: cd: %s: No such file or directory\n", token); //Error 
+				printf("-shellax: cd: %s\n", strerror(errno)); //Error 
 			} else if (errno == 20){
-				printf("-shellax: cd: %s: Not a directory\n", token); //Error 
+				printf("-shellax: cd: %s\n", strerror(errno)); //Error  ??TOKEN
 		} else {
-				printf("-shellax: cd: %s: error #%d\n", token, errno); //generic error
+				printf("-shellax: cd: %s\n", strerror(errno)); //generic error
 			}
 		}
 }
@@ -136,7 +136,7 @@ void child(char *command){
 
  	//Call program and error cases//
  	if ( execvp(command, argv) == -1 ){
-		printf("-shellax: %s: command not found\n", command); //Error
+		printf("-shellax: %s\n", strerror(errno)); //Error
 	}
 
 	exit(EXIT_SUCCESS); //Safety exit -- shouldnt really happen
@@ -195,7 +195,7 @@ void append(char* filename){
 	if (filename != NULL){ //We need to freopen it and set the stream!
 		f = freopen(filename, "a", stdout); //FREopen
 		if (f == NULL){ //error
-			printf("-shellax: %s: error opening file\n", filename);
+			printf("-shellax: %s\n", strerror(errno));
 		}
 	} 
 
@@ -210,7 +210,7 @@ void re_out(char* filename){
 	if (filename != NULL){ //We need to freopen it and set the stream!
 		f = freopen(filename, "w", stdout); //FREopen
 		if (f == NULL){ //error
-			printf("-shellax: %s: error opening file\n", filename);
+			printf("-shellax: %s\n", strerror(errno));
 		}
 	}	
 
@@ -225,7 +225,7 @@ void re_in(char* filename){
 	if (filename != NULL){ //We need to freopen it and set the stream!
 		f = freopen(filename, "r", stdin); //FREopen
 		if (f == NULL){ //error
-			printf("-shellax: %s: error opening file\n", filename);
+			printf("-shellax: %s\n", strerror(errno));
 		}
 	}	
 
